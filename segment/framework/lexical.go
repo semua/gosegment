@@ -1,8 +1,9 @@
 package framework
 
 import (
-	"segment/dict"
 	"sort"
+
+	"github.com/semua/gosegment/segment/dict"
 )
 
 const (
@@ -192,7 +193,7 @@ func (s *State) getText(dfa *Lexical) {
 	dfa.beginIndex = endIndex + 1
 }
 
-// static 
+// static
 var states = []*State{}
 var EofAction rune = 0
 var s0 = addState(NewStateId(0))                        // Start state

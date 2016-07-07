@@ -2,13 +2,14 @@ package segment
 
 import (
 	"container/list"
-	"segment/dict"
-	"segment/framework"
-	"segment/match"
-	"segment/utils"
-	"strings"
 	"regexp"
+	"strings"
 	"unicode"
+
+	"github.com/semua/gosegment/segment/dict"
+	"github.com/semua/gosegment/segment/framework"
+	"github.com/semua/gosegment/segment/match"
+	"github.com/semua/gosegment/segment/utils"
 )
 
 const PATTERNS = `([０-９\d]+)|([ａ-ｚＡ-Ｚa-zA-Z_]+)`
@@ -29,7 +30,7 @@ func NewSegment() *Segment {
 }
 
 func (s *Segment) Init(dictPath string) (err error) {
-    s.re = regexp.MustCompile(PATTERNS)
+	s.re = regexp.MustCompile(PATTERNS)
 	err = s.loadVerbTable(dictPath + "/Verbtable.txt")
 	if err == nil {
 		err = s.loadDictionary(dictPath)
@@ -140,77 +141,77 @@ func (s *Segment) preSegment(text string) *list.List {
 			cur = rcur.Next()
 			result.Remove(removeItem)
 		case dict.TEnglish:
-		    cur.Value.(*dict.WordInfo).Rank = s.params.EnglishRank
-		    cur.Value.(*dict.WordInfo).Word = s.convertChineseCapicalToAsiic(cur.Value.(*dict.WordInfo).Word)
-		    if s.options.IgnoreCapital {
-		        cur.Value.(*dict.WordInfo).Word = strings.ToLower(cur.Value.(*dict.WordInfo).Word)
-		    }
-		    
-		    if s.options.EnglishSegment {
-		        lower := strings.ToLower(cur.Value.(*dict.WordInfo).Word)
-		        if lower != cur.Value.(*dict.WordInfo).Word {
-		            result.InsertBefore(dict.NewWordInfo(lower, cur.Value.(*dict.WordInfo).Position, dict.POS_A_NX, 1, s.params.EnglishLowerRank, dict.TEnglish, dict.TEnglish), cur)
-		        }
-		        stem := s.getStem(lower)
-		        if len(stem) > 0 {
-		            if lower != stem {
-		                result.InsertBefore(dict.NewWordInfo(stem, cur.Value.(*dict.WordInfo).Position, dict.POS_A_NX, 1, s.params.EnglishStemRank, dict.TEnglish, dict.TEnglish), cur)
-		            }
-		        }
-		    }
-		    
-		    if s.options.EnglishMultiDimensionality {
-		        needSplit := false
-		        for _, c := range (cur.Value.(*dict.WordInfo).Word) {
-		            if (c >= '0' && c <= '9') || (c == '_') {
-		                needSplit = true
-		                break
-		            }
-		        }
-		        if needSplit {
-		            output := s.re.FindAllString(cur.Value.(*dict.WordInfo).Word, -1)
-		            if len(output) > 1 {
-		                position := cur.Value.(*dict.WordInfo).Position
-		                for _, splitWord := range output {
-		                    if len(splitWord) == 0 {
-		                        continue
-		                    }
-		                    
-		                    var wi *dict.WordInfo
-		                    r := utils.FirstRune(splitWord) 
-		                    if r >= '0' && r <= '9' {
-		                    	wi = dict.NewWordInfoSome(splitWord, dict.POS_A_M, 1)
-		                    	wi.Position = position
-		                    	wi.Rank = s.params.NumericRank
-		                    	wi.OriginalWordType = dict.TEnglish
-		                    	wi.WordType = dict.TNumeric
-		                    }else{
-		                    	wi = dict.NewWordInfoSome(splitWord, dict.POS_A_NX, 1)
-		                    	wi.Position = position
-		                    	wi.Rank = s.params.EnglishRank
-		                    	wi.OriginalWordType = dict.TEnglish
-		                    	wi.WordType = dict.TEnglish
-		                    }
-		                    
-		                    result.InsertBefore(wi, cur)
-		                    position += utils.RuneLen(splitWord)
-		                }
-		            }
-		        }
-		    }
-		    
-		    var ok bool
-		    if ok, cur = s.mergeEnglishSpecialWord(runes, result, cur); !ok {
-		         cur = cur.Next()
-		    }
+			cur.Value.(*dict.WordInfo).Rank = s.params.EnglishRank
+			cur.Value.(*dict.WordInfo).Word = s.convertChineseCapicalToAsiic(cur.Value.(*dict.WordInfo).Word)
+			if s.options.IgnoreCapital {
+				cur.Value.(*dict.WordInfo).Word = strings.ToLower(cur.Value.(*dict.WordInfo).Word)
+			}
+
+			if s.options.EnglishSegment {
+				lower := strings.ToLower(cur.Value.(*dict.WordInfo).Word)
+				if lower != cur.Value.(*dict.WordInfo).Word {
+					result.InsertBefore(dict.NewWordInfo(lower, cur.Value.(*dict.WordInfo).Position, dict.POS_A_NX, 1, s.params.EnglishLowerRank, dict.TEnglish, dict.TEnglish), cur)
+				}
+				stem := s.getStem(lower)
+				if len(stem) > 0 {
+					if lower != stem {
+						result.InsertBefore(dict.NewWordInfo(stem, cur.Value.(*dict.WordInfo).Position, dict.POS_A_NX, 1, s.params.EnglishStemRank, dict.TEnglish, dict.TEnglish), cur)
+					}
+				}
+			}
+
+			if s.options.EnglishMultiDimensionality {
+				needSplit := false
+				for _, c := range cur.Value.(*dict.WordInfo).Word {
+					if (c >= '0' && c <= '9') || (c == '_') {
+						needSplit = true
+						break
+					}
+				}
+				if needSplit {
+					output := s.re.FindAllString(cur.Value.(*dict.WordInfo).Word, -1)
+					if len(output) > 1 {
+						position := cur.Value.(*dict.WordInfo).Position
+						for _, splitWord := range output {
+							if len(splitWord) == 0 {
+								continue
+							}
+
+							var wi *dict.WordInfo
+							r := utils.FirstRune(splitWord)
+							if r >= '0' && r <= '9' {
+								wi = dict.NewWordInfoSome(splitWord, dict.POS_A_M, 1)
+								wi.Position = position
+								wi.Rank = s.params.NumericRank
+								wi.OriginalWordType = dict.TEnglish
+								wi.WordType = dict.TNumeric
+							} else {
+								wi = dict.NewWordInfoSome(splitWord, dict.POS_A_NX, 1)
+								wi.Position = position
+								wi.Rank = s.params.EnglishRank
+								wi.OriginalWordType = dict.TEnglish
+								wi.WordType = dict.TEnglish
+							}
+
+							result.InsertBefore(wi, cur)
+							position += utils.RuneLen(splitWord)
+						}
+					}
+				}
+			}
+
+			var ok bool
+			if ok, cur = s.mergeEnglishSpecialWord(runes, result, cur); !ok {
+				cur = cur.Next()
+			}
 
 		case dict.TNumeric:
 			cur.Value.(*dict.WordInfo).Word = s.convertChineseCapicalToAsiic(cur.Value.(*dict.WordInfo).Word)
 			cur.Value.(*dict.WordInfo).Rank = s.params.NumericRank
 			var ok bool
-		    if ok, cur = s.mergeEnglishSpecialWord(runes, result, cur); !ok {
-		         cur = cur.Next()
-		    }
+			if ok, cur = s.mergeEnglishSpecialWord(runes, result, cur); !ok {
+				cur = cur.Next()
+			}
 		case dict.TSymbol:
 			cur.Value.(*dict.WordInfo).Rank = s.params.SymbolRank
 			cur = cur.Next()
@@ -222,83 +223,83 @@ func (s *Segment) preSegment(text string) *list.List {
 }
 
 func (s *Segment) getStem(word string) string {
-    if stem, ok := s.verbTable[word]; ok {
-        return stem
-    }
-    
-    st := framework.NewStemmer()
-    for _, r := range word {
-        if unicode.IsLetter(r) {
-            st.Add(r)
-        }
-    }
-    st.Stem()
-    
-    return st.ToString()
+	if stem, ok := s.verbTable[word]; ok {
+		return stem
+	}
+
+	st := framework.NewStemmer()
+	for _, r := range word {
+		if unicode.IsLetter(r) {
+			st.Add(r)
+		}
+	}
+	st.Stem()
+
+	return st.ToString()
 }
 
 func (s *Segment) mergeEnglishSpecialWord(orginalText []rune, wordInfoList *list.List, current *list.Element) (bool, *list.Element) {
-   cur := current
-   cur = cur.Next()
-   
-   last := -1
-   for cur != nil {
-       if cur.Value.(*dict.WordInfo).WordType == dict.TSymbol || cur.Value.(*dict.WordInfo).WordType == dict.TEnglish {
-           last = cur.Value.(*dict.WordInfo).Position + utils.RuneLen(cur.Value.(*dict.WordInfo).Word)
-           cur = cur.Next()
-       } else {
-           break
-       }
-   }
-   
-   if last >= 0 {
-       first := current.Value.(*dict.WordInfo).Position
-       newWord := orginalText[first:last]
-       wa := s.wordDictionary.GetWordAttr(newWord)
-       if wa == nil {
-           return false, current
-       }
-       
-       for current != cur {
-           removeItem := current
-           current = current.Next()
-           wordInfoList.Remove(removeItem)
-       }
-       
-       	wi := dict.NewWordInfoDefault()
+	cur := current
+	cur = cur.Next()
+
+	last := -1
+	for cur != nil {
+		if cur.Value.(*dict.WordInfo).WordType == dict.TSymbol || cur.Value.(*dict.WordInfo).WordType == dict.TEnglish {
+			last = cur.Value.(*dict.WordInfo).Position + utils.RuneLen(cur.Value.(*dict.WordInfo).Word)
+			cur = cur.Next()
+		} else {
+			break
+		}
+	}
+
+	if last >= 0 {
+		first := current.Value.(*dict.WordInfo).Position
+		newWord := orginalText[first:last]
+		wa := s.wordDictionary.GetWordAttr(newWord)
+		if wa == nil {
+			return false, current
+		}
+
+		for current != cur {
+			removeItem := current
+			current = current.Next()
+			wordInfoList.Remove(removeItem)
+		}
+
+		wi := dict.NewWordInfoDefault()
 		wi.Word = string(newWord)
 		wi.Pos = wa.Pos
 		wi.Frequency = wa.Frequency
 		wi.WordType = dict.TEnglish
 		wi.Position = first
 		wi.Rank = s.params.EnglishRank
-		
+
 		if current == nil {
-		    wordInfoList.PushBack(wi)
+			wordInfoList.PushBack(wi)
 		} else {
-		    wordInfoList.InsertBefore(wi, current)
+			wordInfoList.InsertBefore(wi, current)
 		}
-		
+
 		return true, current
-   }
-   
-   return false, current
+	}
+
+	return false, current
 }
 
 func (s *Segment) convertChineseCapicalToAsiic(text string) string {
-    runes := utils.ToRunes(text)
-    for i := 0; i < len(runes); i++ {
-        if runes[i] >= '０' && runes[i] <= '９' {
-           runes[i] -= '０'
-           runes[i] += '0'
-        } else if runes[i] >= 'ａ' && runes[i] <= 'ｚ' {
-           runes[i] -= 'ａ'
-           runes[i] += 'a'
-        } else if runes[i] >= 'Ａ' && runes[i] <= 'Ｚ' {
-           runes[i] -= 'Ａ'
-           runes[i] += 'A'
-        }
-    }
+	runes := utils.ToRunes(text)
+	for i := 0; i < len(runes); i++ {
+		if runes[i] >= '０' && runes[i] <= '９' {
+			runes[i] -= '０'
+			runes[i] += '0'
+		} else if runes[i] >= 'ａ' && runes[i] <= 'ｚ' {
+			runes[i] -= 'ａ'
+			runes[i] += 'a'
+		} else if runes[i] >= 'Ａ' && runes[i] <= 'Ｚ' {
+			runes[i] -= 'Ａ'
+			runes[i] += 'A'
+		}
+	}
 	return string(runes)
 }
 

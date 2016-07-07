@@ -2,9 +2,10 @@ package dict
 
 import (
 	"container/list"
-	"segment/utils"
 	"strconv"
 	"strings"
+
+	"github.com/semua/gosegment/segment/utils"
 )
 
 type PositionLength struct {
@@ -189,6 +190,6 @@ func (d *WordDictionary) GetAllMatchs(text string, chineseNameIdentify bool) (re
 			}
 		}
 	}
-	
+
 	return
 }
